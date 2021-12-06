@@ -16,9 +16,13 @@ functions:
       - http:
           path: /
           method: ANY
+          cors:
+              origin: '*'
       - http:
           path: /{proxy+}
           method: ANY
+          cors:
+              origin: '*'
     environment:
       TMDB_API_KEY: ${param:TMDB_API_KEY}
       TMDB_BASE_URL: https://api.themoviedb.org/3/

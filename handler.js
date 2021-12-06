@@ -7,9 +7,21 @@ const app = express();
 const tmdbApiKey = process.env.TMDB_API_KEY
 const baseTMDBApi = process.env.TMDB_BASE_URL
 
+/**
+ * Default Header
+ */
+app.use("*", (_, res, next) => {
+  res.setHeader("X-Powered-By", "PSM Dev")
+  res.setHeader("Access-Control-Allow-Headers", "*")
+  res.setHeader("Access-Control-Allow-Origin", "*")
+  res.setHeader("Access-Control-Allow-Methods", "*")
+  next()
+})
+
 app.get("/", (req, res, next) => {
   return res.status(200).json({
-    message: "Hello from root!"
+    message: "Hello from proxy server 🤗",
+    time: Date.now()
   });
 });
 
@@ -18,7 +30,9 @@ app.all("/tmdb/*", async (req, res, next) => {
     const url = `${baseTMDBApi}${req.path.replace('/tmdb/', '')}`
     const query = {}
     Object.assign(query, req.query)
-    Object.assign(query, { api_key: tmdbApiKey })
+    if(!req.query.api_key) {
+      Object.assign(query, { api_key: tmdbApiKey })
+    }
     console.log(req.method)
     const result = await axios(
       {
@@ -27,7 +41,8 @@ app.all("/tmdb/*", async (req, res, next) => {
         params: query
       }
     );
-    return res.status(200).json(result.data);
+    console.log(result);
+    return res.status(result.status).json(result.data);
   } catch (err) {
     return res.status(404).json({ message: "Not Found" })
   }
